@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"sellora_backend/internal/config"
@@ -50,6 +52,13 @@ func main() {
 	reportHandler := handlers.NewReportHandler(reportRepo)
 
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+	AllowAllOrigins: true,
+	AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	AllowHeaders:    []string{"Origin", "Content-Type", "Accept"},
+	MaxAge:          12 * time.Hour,
+}))
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
