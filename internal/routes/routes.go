@@ -10,6 +10,7 @@ func Setup(
 	r *gin.Engine,
 	categoryHandler *handlers.CategoryHandler,
 	productHandler *handlers.ProductHandler,
+	transactionHandler *handlers.TransactionHandler,
 ) {
 	api := r.Group("/api")
 	{
@@ -26,6 +27,12 @@ func Setup(
 			products.POST("", productHandler.Create)
 			products.PUT("/:id", productHandler.Update)
 			products.DELETE("/:id", productHandler.Delete)
+		}
+
+		transactions := api.Group("/transactions")
+		{
+			transactions.GET("", transactionHandler.GetAll)
+			transactions.POST("", transactionHandler.Create)
 		}
 	}
 }

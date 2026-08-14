@@ -43,6 +43,9 @@ func main() {
 	productRepo := repositories.NewProductRepository(db)
 	productHandler := handlers.NewProductHandler(productRepo)
 
+	transactionRepo := repositories.NewTransactionRepository(db)
+	transactionHandler := handlers.NewTransactionHandler(transactionRepo)
+
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -52,7 +55,7 @@ func main() {
 		})
 	})
 
-	routes.Setup(r, categoryHandler, productHandler)
+	routes.Setup(r, categoryHandler, productHandler, transactionHandler)
 
 	log.Printf("Server jalan di port %s", cfg.AppPort)
 	r.Run(":" + cfg.AppPort)
