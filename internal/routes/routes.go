@@ -11,6 +11,7 @@ func Setup(
 	categoryHandler *handlers.CategoryHandler,
 	productHandler *handlers.ProductHandler,
 	transactionHandler *handlers.TransactionHandler,
+	reportHandler *handlers.ReportHandler,
 ) {
 	api := r.Group("/api")
 	{
@@ -33,6 +34,16 @@ func Setup(
 		{
 			transactions.GET("", transactionHandler.GetAll)
 			transactions.POST("", transactionHandler.Create)
+		}
+
+		// Dashboard pakai period "daily" secara default (lihat GetSummary)
+		api.GET("/dashboard", reportHandler.GetSummary)
+
+		reports := api.Group("/reports")
+		{
+			reports.GET("/summary", reportHandler.GetSummary)
+			reports.GET("/chart", reportHandler.GetTrendChart)
+			reports.GET("/breakdown", reportHandler.GetExpenseBreakdown)
 		}
 	}
 }
