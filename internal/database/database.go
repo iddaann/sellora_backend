@@ -1,10 +1,9 @@
 package database
 
 import (
-	"fmt"
 	"log"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
@@ -12,18 +11,17 @@ import (
 )
 
 func Connect(cfg *config.Config) *gorm.DB {
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
-	)
+	if cfg.DatabaseURL == "" {
+		log.Fatal("DATABASE_URL belum diisi di file .env")
+	}
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config {
+	db, err := gorm.Open(postgres.Open(cfg.DatabaseURL), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		log.Fatalf("gagal connect ke database: %v", err)
+		log.Fatalf("gagal connect ke database Supabase: %v", err)
 	}
 
-	log.Println("berhasil connect ke database:", cfg.DBName)
+	log.Println("berhasil connect ke database Supabase PostgreSQL")
 	return db
 }
