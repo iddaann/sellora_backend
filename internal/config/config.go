@@ -9,12 +9,8 @@ import (
 
 // Config menampung semua environment variable yang dibutuhkan aplikasi.
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	AppPort    string
+	DatabaseURL string
+	AppPort     string
 }
 
 // Load membaca file .env dan mengembalikan Config yang siap dipakai.
@@ -26,11 +22,7 @@ func Load() *Config {
 	}
 
 	return &Config{
-		DBHost:     os.Getenv("DB_HOST"),
-		DBPort:     os.Getenv("DB_PORT"),
-		DBUser:     os.Getenv("DB_USER"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBName:     os.Getenv("DB_NAME"),
-		AppPort:    os.Getenv("APP_PORT"),
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+		AppPort:     os.Getenv("APP_PORT"),
 	}
 }
