@@ -34,7 +34,7 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 
 type createTransactionItemRequest struct {
 	ProductID   uint    `json:"product_id" binding:"required"`
-	ProductName string  `json:"product_name" binding:"required"`
+	ProductName string  `json:"product_name"`
 	Quantity    int     `json:"quantity" binding:"required,gt=0"`
 	UnitPrice   float64 `json:"unit_price" binding:"required,gt=0"`
 }
