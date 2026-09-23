@@ -41,6 +41,7 @@ func (r *TransactionRepository) Create(transaction *models.Transaction) error {
 				}
 				return err
 			}
+			transaction.Items[i].ProductName = product.Name
 			transaction.Items[i].CostPrice = product.CostPrice
 		}
 
