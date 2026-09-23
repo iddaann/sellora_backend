@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
