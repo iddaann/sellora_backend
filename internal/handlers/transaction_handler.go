@@ -73,6 +73,35 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 		}
 	}
 
+	// SALE dan PURCHASE wajib memiliki item karena item digunakan untuk
+	// menghitung total dan memperbarui stok.
+	if (req.Type == "SALE" || req.Type == "PURCHASE") && len(req.Items) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Transaksi SALE/PURCHASE harus memiliki minimal satu item"})
+		return
+	}
+
+	// OPERATIONAL dan EXPENSE tidak berhubungan dengan produk.
+	if (req.Type == "OPERATIONAL" || req.Type == "EXPENSE") && len(req.Items) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Transaksi OPERATIONAL/EXPENSE tidak boleh memiliki item produk"})
+		return
+	}
+
+	// Untuk SALE/PURCHASE, backend menghitung ulang total dari detail transaksi.
+	if req.Type == "SALE" || req.Type == "PURCHASE" {
+		calculatedTotal := 0.0
+		for _, item := range req.Items {
+			calculatedTotal += float64(item.Quantity) * item.UnitPrice
+		}
+
+		if math.Abs(calculatedTotal-req.TotalAmount) > 0.01 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":            "total_amount tidak sesuai dengan detail transaksi",
+				"calculated_total": calculatedTotal,
+			})
+			return
+		}
+	}
+
 	transaction := models.Transaction{
 		Type:            models.TransactionType(req.Type),
 		TransactionDate: parsedDate,
@@ -82,6 +111,14 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 	}
 
 	if err := h.repo.Create(&transaction); err != nil {
+		if errors.Is(err, repositories.ErrInsufficientStock) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Stok tidak mencukupi"})
+			return
+		}
+		if errors.Is(err, repositories.ErrProductNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Produk tidak ditemukan"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan transaksi"})
 		return
 	}
