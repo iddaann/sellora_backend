@@ -16,8 +16,6 @@ func NewReportRepository(db *gorm.DB) *ReportRepository {
 	return &ReportRepository{db: db}
 }
 
-// SummaryResult menampung angka mentah hasil kalkulasi, sebelum
-// dikonversi ke DTO response oleh handler.
 type SummaryResult struct {
 	Revenue            float64
 	COGS               float64
@@ -28,8 +26,6 @@ type SummaryResult struct {
 	ProfitMargin       float64
 }
 
-// GetSummary menghitung ringkasan bisnis untuk rentang tanggal tertentu
-// (Bab 15 RPS - Rumus Bisnis).
 func (r *ReportRepository) GetSummary(start, end time.Time) (SummaryResult, error) {
 	var transactions []models.Transaction
 	err := r.db.Preload("Items").
@@ -45,14 +41,8 @@ func (r *ReportRepository) GetSummary(start, end time.Time) (SummaryResult, erro
 		switch t.Type {
 		case models.TransactionSale:
 			revenue += t.TotalAmount
-			// HPP dihitung dari cost_price produk SAAT INI, bukan
-			// dari data historis -- ini simplifikasi yang cukup untuk
-			// skala aplikasi personal seperti Sellora.
 			for _, item := range t.Items {
-				var product models.Product
-				if err := r.db.First(&product, item.ProductID).Error; err == nil {
-					cogs += product.CostPrice * float64(item.Quantity)
-				}
+				cogs += item.CostPrice * float64(item.Quantity)
 			}
 		case models.TransactionOperational:
 			operationalExpense += t.TotalAmount
@@ -79,18 +69,13 @@ func (r *ReportRepository) GetSummary(start, end time.Time) (SummaryResult, erro
 	}, nil
 }
 
-// ChartPointResult untuk grafik tren per hari.
 type ChartPointResult struct {
 	Date    time.Time
 	Revenue float64
 	Profit  float64
 }
 
-// GetDailyTrend menghitung Pendapatan & Laba per hari, dalam rentang
-// tanggal tertentu. Dipakai untuk grafik Dashboard & Report.
 func (r *ReportRepository) GetDailyTrend(start, end time.Time) ([]ChartPointResult, error) {
-	// Buat map tanggal -> summary, supaya hari tanpa transaksi tetap
-	// muncul di grafik dengan nilai 0 (bukan hilang dari daftar).
 	dayCount := int(end.Sub(start).Hours()/24) + 1
 	results := make([]ChartPointResult, dayCount)
 	for i := 0; i < dayCount; i++ {
@@ -116,10 +101,7 @@ func (r *ReportRepository) GetDailyTrend(start, end time.Time) ([]ChartPointResu
 
 			var cogs float64
 			for _, item := range t.Items {
-				var product models.Product
-				if err := r.db.First(&product, item.ProductID).Error; err == nil {
-					cogs += product.CostPrice * float64(item.Quantity)
-				}
+				cogs += item.CostPrice * float64(item.Quantity)
 			}
 			results[dayIndex].Profit += t.TotalAmount - cogs
 		}
@@ -128,14 +110,11 @@ func (r *ReportRepository) GetDailyTrend(start, end time.Time) ([]ChartPointResu
 	return results, nil
 }
 
-// BreakdownResult untuk breakdown pengeluaran per kategori/tipe.
 type BreakdownResult struct {
 	Label  string
 	Amount float64
 }
 
-// GetExpenseBreakdown mengelompokkan pengeluaran: PURCHASE per kategori
-// produk, OPERATIONAL & EXPENSE sebagai baris tersendiri.
 func (r *ReportRepository) GetExpenseBreakdown(start, end time.Time) ([]BreakdownResult, error) {
 	var transactions []models.Transaction
 	err := r.db.Preload("Items").
