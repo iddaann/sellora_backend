@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// TransactionType merepresentasikan 4 tipe transaksi sesuai Bab 21 RPS.
 type TransactionType string
 
 const (
@@ -12,7 +11,6 @@ const (
 	TransactionExpense     TransactionType = "EXPENSE"
 )
 
-// Transaction merepresentasikan tabel `transactions`.
 type Transaction struct {
 	ID              uint              `gorm:"primaryKey" json:"id"`
 	Type            TransactionType   `gorm:"size:20;not null" json:"type"`
@@ -24,8 +22,6 @@ type Transaction struct {
 	UpdatedAt       time.Time         `json:"-"`
 }
 
-// TransactionItem merepresentasikan tabel `transaction_items`.
-// Hanya dipakai untuk tipe SALE dan PURCHASE (lihat hasItems di Flutter).
 type TransactionItem struct {
 	ID            uint    `gorm:"primaryKey" json:"id"`
 	TransactionID uint    `json:"-"`
@@ -33,4 +29,5 @@ type TransactionItem struct {
 	ProductName   string  `gorm:"size:150;not null" json:"product_name"`
 	Quantity      int     `gorm:"not null" json:"quantity"`
 	UnitPrice     float64 `gorm:"not null" json:"unit_price"`
+	CostPrice     float64 `gorm:"not null" json:"cost_price"`
 }
