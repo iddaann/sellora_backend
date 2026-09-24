@@ -1,9 +1,8 @@
 package dto
 
-// SummaryResponse dipakai untuk endpoint Dashboard maupun Report --
-// strukturnya sama persis dengan DashboardSummary & ReportSummary
-// di Flutter (Step 4.1 & 7.1).
+// SummaryResponse dipakai untuk endpoint Dashboard maupun Report.
 type SummaryResponse struct {
+	PeriodLabel        string  `json:"period_label"`
 	Revenue            float64 `json:"revenue"`
 	COGS               float64 `json:"cogs"`
 	GrossProfit        float64 `json:"gross_profit"`
