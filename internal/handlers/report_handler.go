@@ -19,7 +19,7 @@ func NewReportHandler(repo *repositories.ReportRepository) *ReportHandler {
 }
 
 // resolveDateRange menerjemahkan query param "period" (daily/weekly/monthly)
-// menjadi rentang tanggal, sesuai ReportPeriod.range di Flutter (Step 7.1).
+// menjadi rentang tanggal, sesuai ReportPeriod.range di Flutter.
 func resolveDateRange(period string) (time.Time, time.Time) {
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -28,7 +28,7 @@ func resolveDateRange(period string) (time.Time, time.Time) {
 	case "weekly":
 		weekday := int(today.Weekday())
 		if weekday == 0 {
-			weekday = 7 // Minggu dihitung sebagai hari ke-7, bukan ke-0
+			weekday = 7
 		}
 		start := today.AddDate(0, 0, -(weekday - 1))
 		end := start.AddDate(0, 0, 6)
@@ -37,8 +37,19 @@ func resolveDateRange(period string) (time.Time, time.Time) {
 		start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 		end := start.AddDate(0, 1, -1)
 		return start, end.Add(24*time.Hour - time.Second)
-	default: // "daily"
+	default:
 		return today, today.Add(24*time.Hour - time.Second)
+	}
+}
+
+func periodLabel(period string) string {
+	switch period {
+	case "weekly":
+		return "Mingguan"
+	case "monthly":
+		return "Bulanan"
+	default:
+		return "Harian"
 	}
 }
 
@@ -54,6 +65,7 @@ func (h *ReportHandler) GetSummary(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.SummaryResponse{
+		PeriodLabel:        periodLabel(period),
 		Revenue:            result.Revenue,
 		COGS:               result.COGS,
 		GrossProfit:        result.GrossProfit,
